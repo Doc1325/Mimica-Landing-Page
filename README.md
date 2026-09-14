@@ -1,6 +1,6 @@
 # 🎭 Mímica - Landing Page
 
-Landing page oficial de mimica.netlify.app, orientada a vender la app Android de Mímica y mantener la versión web como prueba rápida desde el navegador.
+Landing page oficial de mimicas.netlify.app, orientada a vender la app Android de Mímica y mantener la versión web como prueba rápida desde el navegador.
 
 Este directorio contiene exclusivamente la landing pública, cuya función es presentar el juego, explicar su propuesta de valor y redirigir a los usuarios principalmente a Google Play.
 
@@ -44,10 +44,12 @@ web/
   styles.css   # Tokens del design-system + responsive
   main.js      # Mejora progresiva (la página funciona sin JS)
   assets/      # icon.png, feature-graphic-es.png, *.wav (copias; el origen vive en /assets)
-  sitemap.xml  # URLs absolutas a https://mimica.netlify.app
+  sitemap.xml  # URLs absolutas a https://mimicas.netlify.app
   robots.txt
-  juego/       # Build del juego React (GENERADO, gitignorado, lo crea Netlify)
 ```
+
+El juego compilado sale en `web-game/dist/` (`dist/juego/` + landing en raíz),
+listo para publicar tal cual. No commitear `dist/` (gitignorado).
 
 ## 🚀 Previsualizar en local
 
@@ -56,9 +58,10 @@ web/
 python3 -m http.server 8931
 # → http://localhost:8931/web/index.html
 
-# Juego (requiere build previo)
+# Sitio completo (landing + juego)
 npm run build --prefix web-game
-# → http://localhost:8931/web/juego/
+python3 -m http.server 8932 --directory web-game/dist
+# → http://localhost:8932/ y http://localhost:8932/juego/
 ```
 
 > Servir por HTTP (no `file://`): el juego usa módulos ES y audio.
@@ -76,10 +79,22 @@ npm run build --prefix web-game
 
 ## ☁️ Deploy (Netlify)
 
-`netlify.toml` en la raíz del repo:
+Funciona con los valores por defecto de Netlify (`npm run build` + `dist`),
+sin tocar la UI: el `postbuild` de `web-game` empaqueta el sitio completo
+(landing + `/juego/`) en `web-game/dist/`.
 
-- `publish = "web"`
-- `command` instala y compila `web-game` → `web/juego/` en cada deploy.
+`netlify.toml` (raíz) existe como alternativa con `publish = "web-game/dist"`;
+si lo usas, deja **Base directory**, **Build command** y **Publish directory**
+vacíos en la UI (los valores manuales pisan al archivo).
+
+## 🔄 Sincronizar datos del juego web
+
+`web-game` es autocontenido: copia de `Characters.js`, `CharacterSchema.js`
+y locales en `web-game/src/vendor/`. Si cambian personajes o copy en la app:
+
+```bash
+npm run sync:vendor --prefix web-game && npm run build --prefix web-game
+```
 
 ```bash
 # Probar el build local antes de pushear
